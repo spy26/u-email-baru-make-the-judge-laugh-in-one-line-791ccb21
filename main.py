@@ -49,6 +49,18 @@ def validate(text: str) -> None:
         raise ValueError("entry must be exactly one line")
 
 
+def final_gate(text: str) -> None:
+    """Last check, run just before writing: one printable-ASCII line."""
+    if text.count("\n") or text.count("\r"):
+        raise SystemExit("entry must be exactly one line")
+    if len(text) < 1 or len(text) > 240:
+        raise SystemExit(f"entry must be 1-240 chars, got {len(text)}")
+    if any(ord(ch) < 32 or ord(ch) > 126 for ch in text):
+        raise SystemExit("entry must be printable ASCII only")
+    if not text.strip():
+        raise SystemExit("entry must not be only whitespace")
+
+
 def write_entry(path: str, text: str) -> None:
     """Write the entry and verify the file is byte-identical."""
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
@@ -63,6 +75,7 @@ def write_entry(path: str, text: str) -> None:
 def main() -> None:
     validate(ENTRY)
     out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR")
+    final_gate(ENTRY)
     if out_dir:
         write_entry(os.path.join(out_dir, "entry.txt"), ENTRY)
     # Never delete /output or anything in it: the grader runs in a sandbox
